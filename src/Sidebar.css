@@ -1,0 +1,10 @@
+.sidebar-drawer {
+  z-index: 1200;
+}
+
+.sidebar-drawer .MuiDrawer-paper {
+  width: 240px;
+  box-sizing: border-box;
+  background: #fff;
+  border-right: 1px solid #eee;
+}

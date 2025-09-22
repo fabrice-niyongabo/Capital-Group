@@ -1,0 +1,192 @@
+.plan-container {
+  margin-top: 32px;
+  margin-bottom: 64px;
+  font-family: inherit;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plan-title {
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  font-family: inherit;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+}
+
+.plan-comparison-section {
+  padding: 24px;
+  margin-bottom: 32px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  font-family: inherit;
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.plan-comparison-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.plan-section {
+  padding: 32px;
+  margin-bottom: 32px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  font-family: inherit;
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.plan-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.plan-features-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: fit-content;
+}
+
+.plan-features-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.plan-amount-label {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #333;
+}
+
+.plan-profit-label {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: #388e3c;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.plan-submit-btn {
+  margin-top: 24px;
+  font-family: inherit;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-weight: 600;
+  text-transform: none;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.plan-submit-btn:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.plan-submit-btn:disabled {
+  background: #e0e0e0;
+  color: #9e9e9e;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Table enhancements */
+.MuiTable-root {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.MuiTableHead-root {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.MuiTableRow-root {
+  transition: all 0.2s ease;
+}
+
+.MuiTableRow-root:hover {
+  background-color: rgba(102, 126, 234, 0.04);
+}
+
+.MuiTableRow-root.Mui-selected {
+  background-color: rgba(102, 126, 234, 0.08);
+}
+
+/* Chip enhancements */
+.MuiChip-root {
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+/* Alert enhancements */
+.MuiAlert-root {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Dialog enhancements */
+.MuiDialog-paper {
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .plan-container {
+    margin-top: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .plan-title {
+    padding: 24px 16px;
+    margin-bottom: 24px;
+  }
+  
+  .plan-section {
+    padding: 20px;
+  }
+  
+  .plan-comparison-section {
+    padding: 16px;
+  }
+}
