@@ -40,11 +40,12 @@ import {
 } from '@mui/icons-material';
 import './Earnings.css';
 
-export default function Earnings({ deposits, dailyProfitPercent = 5 }) {
+export default function Earnings({ deposits, dailyProfitPercent = 5, inviteLink, commissionBalance = 0, commissionHistory = [], onWithdrawCommission, referralCount = 0 }) {
   const formatCurrency = useMemo(() => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }), []);
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Calculate summary statistics
   const summaryStats = useMemo(() => {
@@ -114,6 +115,17 @@ export default function Earnings({ deposits, dailyProfitPercent = 5 }) {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleCopyInvite = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (e) {
+      console.error('Copy failed', e);
+    }
+  };
+
   return (
     <Container maxWidth="lg" className="earnings-container">
       {/* Header Section */}
@@ -149,6 +161,97 @@ export default function Earnings({ deposits, dailyProfitPercent = 5 }) {
           Suivez vos investissements et profits en temps réel
         </Typography>
       </Box>
+
+      {/* Referral Section */}
+      <Paper className="earnings-section" sx={{ mt: 2 }}>
+        <Typography variant="h6" gutterBottom>Programme de Parrainage</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1, alignItems: { xs: 'stretch', sm: 'center' } }}>
+            <TextField
+              label="Votre lien d'invitation"
+              value={inviteLink || ''}
+              fullWidth
+              InputProps={{ readOnly: true }}
+            />
+            <Button variant="contained" onClick={handleCopyInvite} disabled={!inviteLink}>
+              {copied ? 'Copié!' : 'Copier'}
+            </Button>
+          </Box>
+          <Divider />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Card className="summary-card">
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <AttachMoney color="success" />
+                    <Typography variant="h6">Commission disponible</Typography>
+                  </Box>
+                  <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
+                    {formatCurrency.format(commissionBalance || 0)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    5% des dépôts de vos filleuls
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Plus vous invitez, plus vos commissions augmentent en temps réel.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Filleuls: <strong>{referralCount}</strong>
+                  </Typography>
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => {
+                        const amount = commissionBalance || 0;
+                        if (!amount || amount <= 0) return;
+                        if (onWithdrawCommission) {
+                          const ok = onWithdrawCommission(amount);
+                          if (ok) alert('Commission retirée avec succès.');
+                        }
+                      }}
+                      disabled={!commissionBalance}
+                    >
+                      Retirer la commission
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={8}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>Historique des Commissions</Typography>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Date</TableCell>
+                      <TableCell align="right">Montant Dépôt</TableCell>
+                      <TableCell align="right">Commission (5%)</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(commissionHistory && commissionHistory.length > 0) ? (
+                      commissionHistory.map((c) => (
+                        <TableRow key={c.id}>
+                          <TableCell>{c.date}</TableCell>
+                          <TableCell align="right">{formatCurrency.format(c.amount)}</TableCell>
+                          <TableCell align="right">{formatCurrency.format(c.commission)}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} align="center">
+                          <Typography variant="body2" color="text.secondary">Aucune commission pour le moment.</Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
 
       {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -345,9 +448,9 @@ export default function Earnings({ deposits, dailyProfitPercent = 5 }) {
                     </TableCell>
                     <TableCell align="center">
                       <Chip 
-                        label={dep.plan || 'Standard'} 
+                        label={'Normal'} 
                         size="small"
-                        color={dep.plan === 'VIP' ? 'warning' : dep.plan === 'VVIP' ? 'secondary' : 'success'}
+                        color={'success'}
                       />
                     </TableCell>
                     <TableCell align="center">

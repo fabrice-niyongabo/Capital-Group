@@ -49,27 +49,7 @@ const plans = [
     duration: '30 jours',
     features: ['Support 24/7', 'Retrait quotidien', 'Garantie de sécurité'],
     color: '#4caf50'
-  },
-  { 
-    name: 'VIP', 
-    range: '1000$ - 9999$', 
-    min: 1000, 
-    max: 9999, 
-    percent: 7,
-    duration: '45 jours',
-    features: ['Support prioritaire', 'Retrait instantané', 'Analyste dédié'],
-    color: '#ff9800'
-  },
-  { 
-    name: 'VVIP', 
-    range: '10000$ - X', 
-    min: 10000, 
-    max: null, 
-    percent: 10,
-    duration: '60 jours',
-    features: ['Support VIP', 'Retrait prioritaire', 'Conseiller personnel'],
-    color: '#9c27b0'
-  },
+  }
 ];
 
 import { useNavigate } from 'react-router-dom';
@@ -173,41 +153,31 @@ export default function Plan({ deposit, setDeposit, deposits, handleDeposit }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {plans.map((p) => (
-                <TableRow 
-                  key={p.name} 
-                  selected={selectedPlan === p.name}
-                  sx={{ 
-                    '&:hover': { backgroundColor: 'action.hover' },
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => setSelectedPlan(p.name)}
-                >
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Chip 
-                        label={p.name} 
-                        color={p.name === 'Normal' ? 'success' : p.name === 'VIP' ? 'warning' : 'secondary'}
-                        size="small"
-                      />
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">{p.range}</TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2" sx={{ color: p.color, fontWeight: 'bold' }}>
-                      {p.percent}%
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">{p.duration}</TableCell>
-                  <TableCell align="center">
-                    <Tooltip title={p.features.join(', ')}>
-                      <IconButton size="small">
-                        <Info />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
+              <TableRow selected>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip 
+                      label={plans[0].name} 
+                      color={'success'}
+                      size="small"
+                    />
+                  </Box>
+                </TableCell>
+                <TableCell align="center">{plans[0].range}</TableCell>
+                <TableCell align="center">
+                  <Typography variant="body2" sx={{ color: plans[0].color, fontWeight: 'bold' }}>
+                    {plans[0].percent}%
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">{plans[0].duration}</TableCell>
+                <TableCell align="center">
+                  <Tooltip title={plans[0].features.join(', ')}>
+                    <IconButton size="small">
+                      <Info />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
@@ -224,7 +194,7 @@ export default function Plan({ deposit, setDeposit, deposits, handleDeposit }) {
             
             <Box sx={{ mb: 3 }}>
               <Typography variant="body1" className="plan-amount-label">
-                Plan sélectionné: <Chip label={selectedPlan} color="primary" />
+                Plan sélectionné: <Chip label="Normal" color="primary" />
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Montant ({plan.range}):
@@ -286,8 +256,8 @@ export default function Plan({ deposit, setDeposit, deposits, handleDeposit }) {
 
           <Alert severity="warning" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Avertissement:</strong> Les investissements comportent des risques. 
-              Lisez nos conditions d'utilisation avant d'investir.
+              <strong>Conseils:</strong> Investissez régulièrement pour faire croître votre capital et recevez vos profits chaque jour.
+              Utilisez la page Plan pour confirmer vos dépôts, suivez vos gains dans l’onglet Gains et partagez votre lien d’invitation pour gagner des commissions.
             </Typography>
           </Alert>
         </Grid>
