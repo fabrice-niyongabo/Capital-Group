@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Container,
   Typography,
@@ -20,23 +20,13 @@ import {
   DialogActions,
   TextField,
   Alert,
-  Chip,
-  IconButton,
-  Tooltip,
   LinearProgress,
   Divider,
 } from "@mui/material";
 import {
-  TrendingUp,
-  AccountBalance,
   AttachMoney,
   ShowChart,
   AccountBalanceWallet,
-  Download,
-  Info,
-  CheckCircle,
-  Warning,
-  Timeline,
 } from "@mui/icons-material";
 import "./index.css";
 import { useSelector } from "react-redux";
@@ -45,9 +35,21 @@ import { useNavigate } from "react-router-dom";
 import { APP_CONFIG } from "lib/constants";
 import InvestmentHistory from "./InvestmentHistory";
 import Summary from "./Summary";
+import {
+  currencyFormatter,
+  errorHandler,
+  setAuthHeaders,
+  toastMessage,
+} from "lib/util";
+import { stat } from "fs";
+import FullPageLoader from "compoents/full-page-loader";
+import axios from "axios";
 
 export default function Earnings() {
   const navigate = useNavigate();
+  const { statistics } = useSelector(
+    (state: RootState) => state.statisticsReducer
+  );
   const { token, userDetails } = useSelector(
     (state: RootState) => state.userReducer
   );
@@ -93,7 +95,7 @@ export default function Earnings() {
   );
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Calculate summary statistics
@@ -129,22 +131,36 @@ export default function Earnings() {
     };
   }, [deposits, dailyProfitPercent]);
 
-  const handleWithdraw = () => {
-    setWithdrawDialogOpen(true);
-  };
-
   const handleWithdrawConfirm = async () => {
-    setIsProcessing(true);
     try {
-      // Simulate withdrawal processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      alert(`Retrait de $${withdrawAmount} traité avec succès!`);
+      if (!statistics) return;
+
+      if (
+        !withdrawAmount ||
+        parseFloat(withdrawAmount) > (statistics?.wallet_total_amount || 0)
+      ) {
+        toastMessage(
+          "ERROR",
+          "Vous ne pouvez pas retirer plus que ce que vous avez."
+        );
+        return;
+      }
+
+      setIsWithdrawing(true);
+      await axios.post(
+        `${APP_CONFIG.BACKEND_URL}/wallet/withdraw`,
+        {
+          amount: withdrawAmount,
+        },
+        setAuthHeaders(token || "")
+      );
+      toastMessage("SUCCESS", "Demande de retrait initiée avec succès!");
       setWithdrawDialogOpen(false);
       setWithdrawAmount("");
     } catch (error) {
-      console.error("Withdrawal failed:", error);
+      errorHandler(error);
     } finally {
-      setIsProcessing(false);
+      setIsWithdrawing(false);
     }
   };
 
@@ -331,8 +347,8 @@ export default function Earnings() {
         <Button
           variant="contained"
           startIcon={<AccountBalanceWallet />}
-          onClick={handleWithdraw}
-          // disabled={summaryStats.totalDailyProfit === 0}
+          onClick={() => setWithdrawDialogOpen(true)}
+          // disabled={statistics?.wallet_total_amount === 0}
           className="action-button"
         >
           Retirer des Fonds
@@ -432,7 +448,7 @@ export default function Earnings() {
           <Typography variant="body1" gutterBottom>
             Montant disponible pour retrait:{" "}
             <strong>
-              {formatCurrency.format(summaryStats.totalDailyProfit)}
+              {currencyFormatter(statistics?.wallet_total_amount || 0)}$
             </strong>
           </Typography>
           <TextField
@@ -443,7 +459,7 @@ export default function Earnings() {
             fullWidth
             value={withdrawAmount}
             onChange={(e) => setWithdrawAmount(e.target.value)}
-            inputProps={{ max: summaryStats.totalDailyProfit }}
+            // inputProps={{ max: statistics?.wallet_total_amount || 0 }}
             sx={{ mt: 2 }}
           />
           <Alert severity="info" sx={{ mt: 2 }}>
@@ -458,16 +474,15 @@ export default function Earnings() {
           <Button
             onClick={handleWithdrawConfirm}
             variant="contained"
-            disabled={
-              !withdrawAmount ||
-              parseFloat(withdrawAmount) > summaryStats.totalDailyProfit ||
-              isProcessing
-            }
+            // disabled={
+            //   !withdrawAmount ||
+            //   parseFloat(withdrawAmount) > summaryStats.totalDailyProfit
+            // }
           >
-            {isProcessing ? "Traitement..." : "Confirmer le Retrait"}
+            Confirmer le Retrait
           </Button>
         </DialogActions>
-        {isProcessing && <LinearProgress />}
+        <FullPageLoader open={isWithdrawing} />
       </Dialog>
     </Container>
   );
