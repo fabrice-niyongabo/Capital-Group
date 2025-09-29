@@ -3,11 +3,11 @@ import { IAction } from "types/actions";
 import { IUser } from "types/user";
 
 interface IUserReducer {
-  details?: IUser;
+  userDetails?: IUser;
   token?: string;
 }
 const initialState: IUserReducer = {
-  details: undefined,
+  userDetails: undefined,
   token: undefined,
 };
 
@@ -17,7 +17,7 @@ const userReducer = (
 ): IUserReducer => {
   switch (action.type) {
     case SET_USER:
-      return { ...state, details: action.payload };
+      return { ...state, userDetails: action.payload };
     case SET_TOKEN:
       return { ...state, token: action.payload };
     case RESET_USER:

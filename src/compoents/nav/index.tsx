@@ -19,21 +19,30 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
+import axios from "axios";
+import FullPageLoader from "compoents/full-page-loader";
+import { APP_CONFIG } from "lib/constants";
+import { toastMessage } from "lib/util";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { setShowLogin } from "store/actions/app";
+import { setToken, setUser } from "store/actions/user";
 import { RootState } from "store/reducers";
 
 function Nav() {
+  const dispatch = useDispatch();
   const { showLogin } = useSelector((state: RootState) => state.appReducer);
+  const { token, userDetails } = useSelector(
+    (state: RootState) => state.userReducer
+  );
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState("user");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState<any>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
 
-  const [adminMode, setAdminMode] = useState(false);
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [regFullName, setRegFullName] = useState("");
@@ -42,12 +51,13 @@ function Nav() {
   const [regPassword, setRegPassword] = useState("");
   const [regConfirm, setRegConfirm] = useState("");
   const [pendingReferrerId, setPendingReferrerId] = useState(null);
-  const [snackOpen, setSnackOpen] = useState(false);
-  const [snackMessage, setSnackMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // login state
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginForm, setLoginForm] = useState({
+    email: "",
+    password: "",
+  });
 
   const navigate = useNavigate();
   const tabs = [
@@ -71,6 +81,7 @@ function Nav() {
   const handleLoginClose = () => {
     setLoginOpen(false);
     setLoginError("");
+    dispatch(setShowLogin(false));
   };
 
   const handleRegister = () => {
@@ -128,7 +139,6 @@ function Nav() {
     // auto-login after registration
     setLoggedIn(true);
     setRole("user");
-    setCurrentUserId(newUser.id);
     setLoginOpen(false);
     // clear registration fields
     setRegFullName("");
@@ -138,42 +148,33 @@ function Nav() {
     setRegConfirm("");
   };
 
-  const handleLogin = () => {
-    setLoginError("");
-    if (!isRegisterMode) {
-      if (!username || !password) {
-        setLoginError("Veuillez entrer un email et un mot de passe.");
-        return;
-      }
-    }
-    // If user mode, validate against in-memory users
-    if (!adminMode && !isRegisterMode) {
-      const found = users.find(
-        (u) => u.email === String(username).toLowerCase()
-      );
-      if (!found || found.password !== password) {
-        setLoginError("Identifiants invalides.");
-        return;
-      }
-      setCurrentUserId(found.id);
-    }
-    if (adminMode) {
-      const ADMIN_USER = process.env.REACT_APP_ADMIN_USER || "admin";
-      const ADMIN_PASS = process.env.REACT_APP_ADMIN_PASS || "admin123";
-      if (username === ADMIN_USER && password === ADMIN_PASS) {
-        setLoggedIn(true);
-        setRole("admin");
-        setLoginOpen(false);
-        return;
-      }
-      setLoginError("Identifiants administrateur invalides.");
+  const handleLogin = async () => {
+    if (!loginForm.email || !loginForm.password) {
+      setLoginError("Veuillez entrer un email et un mot de passe.");
       return;
     }
-    // regular user login
-    if (!isRegisterMode) {
-      setLoggedIn(true);
-      setRole("user");
-      setLoginOpen(false);
+    try {
+      setIsSubmitting(true);
+      const URL = isAdminLogin
+        ? APP_CONFIG.BACKEND_URL + "/admin/login"
+        : APP_CONFIG.BACKEND_URL + "/login";
+      const res = await axios.post(URL, {
+        email: loginForm.email,
+        password: loginForm.password,
+      });
+
+      toastMessage("SUCCESS", "Connecté avec succès");
+      dispatch(setToken(res.data.access_token));
+      dispatch(
+        setUser({
+          ...res.data.user_details,
+          role: isAdminLogin ? "admin" : "user",
+        })
+      );
+    } catch (error) {
+      toastMessage("ERROR", "Mot de passe ou email invalide");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -234,7 +235,7 @@ function Nav() {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            {!loggedIn ? (
+            {!token?.trim() ? (
               <MenuItem
                 onClick={() => {
                   handleClose();
@@ -259,7 +260,6 @@ function Nav() {
                   onClick={() => {
                     setLoggedIn(false);
                     setRole("user");
-                    setCurrentUserId(null);
                     handleClose();
                   }}
                 >
@@ -325,25 +325,29 @@ function Nav() {
               <TextField
                 autoFocus
                 margin="dense"
-                label={adminMode ? "Nom d'utilisateur" : "Email"}
-                type={adminMode ? "text" : "email"}
+                label={"Email"}
+                type={"email"}
                 fullWidth
-                value={username}
-                onChange={(e: any) => setUsername(e.target.value)}
+                value={loginForm.email}
+                onChange={(e: any) =>
+                  setLoginForm({ ...loginForm, email: e.target.value })
+                }
               />
               <TextField
                 margin="dense"
                 label="Mot de passe"
                 type="password"
                 fullWidth
-                value={password}
-                onChange={(e: any) => setPassword(e.target.value)}
+                value={loginForm.password}
+                onChange={(e: any) =>
+                  setLoginForm({ ...loginForm, password: e.target.value })
+                }
               />
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={adminMode}
-                    onChange={(e: any) => setAdminMode(e.target.checked)}
+                    checked={isAdminLogin}
+                    onChange={(e: any) => setIsAdminLogin(e.target.checked)}
                   />
                 }
                 label="Se connecter en tant qu'admin"
@@ -372,7 +376,7 @@ function Nav() {
                 variant="text"
                 onClick={() => {
                   setIsRegisterMode(true);
-                  setAdminMode(false);
+                  setIsAdminLogin(false);
                   setLoginError("");
                 }}
               >
@@ -397,6 +401,7 @@ function Nav() {
             </Button>
           )}
         </DialogActions>
+        <FullPageLoader open={isSubmitting} />
       </Dialog>
     </>
   );
