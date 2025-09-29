@@ -1,7 +1,9 @@
-import { AccountCircle } from "@mui/icons-material";
+import { AccountCircle, Dashboard, ExitToApp } from "@mui/icons-material";
 import {
   Alert,
   AppBar,
+  Avatar,
+  Badge,
   Box,
   Button,
   Checkbox,
@@ -22,7 +24,7 @@ import {
 import axios from "axios";
 import FullPageLoader from "compoents/full-page-loader";
 import { APP_CONFIG } from "lib/constants";
-import { toastMessage } from "lib/util";
+import { errorHandler, toastMessage } from "lib/util";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -45,12 +47,14 @@ function Nav() {
   const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [regFullName, setRegFullName] = useState("");
-  const [regEmail, setRegEmail] = useState("");
-  const [regPhone, setRegPhone] = useState("");
-  const [regPassword, setRegPassword] = useState("");
-  const [regConfirm, setRegConfirm] = useState("");
   const [pendingReferrerId, setPendingReferrerId] = useState(null);
+  const [registerForm, setRegisterForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // login state
@@ -84,12 +88,12 @@ function Nav() {
     dispatch(setShowLogin(false));
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     setLoginError("");
     // basic validation
-    const email = regEmail.trim().toLowerCase();
-    if (!regFullName.trim()) {
-      setLoginError("Veuillez entrer votre nom complet.");
+    const email = registerForm.email.trim().toLowerCase();
+    if (!registerForm.firstName.trim() || !registerForm.lastName.trim()) {
+      setLoginError("Veuillez entrer votre prénom et votre nom.");
       return;
     }
     if (!email) {
@@ -100,52 +104,57 @@ function Nav() {
       setLoginError("Adresse email invalide.");
       return;
     }
-    const phone = regPhone.trim();
-    if (!phone) {
-      setLoginError("Veuillez entrer votre numéro de téléphone.");
-      return;
-    }
-    if (!/^\+?[0-9\s-]{7,15}$/.test(phone)) {
-      setLoginError("Numéro de téléphone invalide.");
-      return;
-    }
-    if (!regPassword) {
+    // const phone = regPhone.trim();
+    // if (!phone) {
+    //   setLoginError("Veuillez entrer votre numéro de téléphone.");
+    //   return;
+    // }
+    // if (!/^\+?[0-9\s-]{7,15}$/.test(phone)) {
+    //   setLoginError("Numéro de téléphone invalide.");
+    //   return;
+    // }
+    if (!registerForm.password) {
       setLoginError("Veuillez entrer un mot de passe.");
       return;
     }
-    if (regPassword.length < 6) {
+    if (registerForm.password.length < 6) {
       setLoginError("Le mot de passe doit contenir au moins 6 caractères.");
       return;
     }
-    if (regPassword !== regConfirm) {
+    if (registerForm.password !== registerForm.confirmPassword) {
       setLoginError("Les mots de passe ne correspondent pas.");
       return;
     }
-    const exists = users.some((u) => u.email === email);
-    if (exists) {
-      setLoginError("Un utilisateur avec cet email existe déjà.");
-      return;
+
+    try {
+      setIsSubmitting(true);
+      await axios.post(APP_CONFIG.BACKEND_URL + "/register", {
+        firstName: registerForm.firstName,
+        lastName: registerForm.lastName,
+        email: registerForm.email,
+        password: registerForm.password,
+      });
+      toastMessage(
+        "SUCCESS",
+        "Inscription réussie, vous pouvez désormais vous connecter avec vos identifiants de compte."
+      );
+      setRegisterForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setLoginForm({
+        email: "",
+        password: "",
+      });
+      setIsRegisterMode(false);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSubmitting(false);
     }
-    const newUser = {
-      id: Date.now().toString(),
-      fullName: regFullName.trim(),
-      email,
-      phone,
-      password: regPassword,
-      invitedById: pendingReferrerId || null,
-      commissionBalance: 0,
-    };
-    setUsers([...users, newUser]);
-    // auto-login after registration
-    setLoggedIn(true);
-    setRole("user");
-    setLoginOpen(false);
-    // clear registration fields
-    setRegFullName("");
-    setRegEmail("");
-    setRegPhone("");
-    setRegPassword("");
-    setRegConfirm("");
   };
 
   const handleLogin = async () => {
@@ -155,10 +164,10 @@ function Nav() {
     }
     try {
       setIsSubmitting(true);
-      const URL = isAdminLogin
+      const endpoint = isAdminLogin
         ? APP_CONFIG.BACKEND_URL + "/admin/login"
         : APP_CONFIG.BACKEND_URL + "/login";
-      const res = await axios.post(URL, {
+      const res = await axios.post(endpoint, {
         email: loginForm.email,
         password: loginForm.password,
       });
@@ -171,6 +180,15 @@ function Nav() {
           role: isAdminLogin ? "admin" : "user",
         })
       );
+      handleLoginClose();
+
+      // Redirect to referrer
+      const url = new URL(window.location.href);
+      const pathValue = url.searchParams.get("redirect");
+      if (pathValue && pathValue.trim().length > 1) {
+        navigate(`/${pathValue}`);
+        return;
+      }
     } catch (error) {
       toastMessage("ERROR", "Mot de passe ou email invalide");
     } finally {
@@ -225,6 +243,13 @@ function Nav() {
             color="inherit"
           >
             <AccountCircle />
+            {token?.trim() && (
+              <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
+                {userDetails?.role === "admin"
+                  ? "Admin"
+                  : userDetails?.firstName}
+              </Typography>
+            )}
           </IconButton>
           <Menu
             id="menu-appbar"
@@ -255,16 +280,19 @@ function Nav() {
                   >
                     Admin
                   </MenuItem>
-                ) : null}
-                <MenuItem
-                  onClick={() => {
-                    setLoggedIn(false);
-                    setRole("user");
-                    handleClose();
-                  }}
-                >
-                  Se déconnecter
-                </MenuItem>
+                ) : (
+                  <>
+                    <MenuItem>
+                      <Dashboard /> Mon compte
+                    </MenuItem>
+                    <MenuItem
+                      style={{ color: "red" }}
+                      onClick={() => navigate("/logout")}
+                    >
+                      <ExitToApp /> Déconnexion
+                    </MenuItem>
+                  </>
+                )}
               </>
             )}
           </Menu>
@@ -281,43 +309,60 @@ function Nav() {
               <TextField
                 autoFocus
                 margin="dense"
-                label="Nom complet"
+                label="Prénom"
                 type="text"
                 fullWidth
-                value={regFullName}
-                onChange={(e: any) => setRegFullName(e.target.value)}
+                value={registerForm.firstName}
+                onChange={(e: any) =>
+                  setRegisterForm({
+                    ...registerForm,
+                    firstName: e.target.value,
+                  })
+                }
+              />
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Nom de famille"
+                type="text"
+                fullWidth
+                value={registerForm.lastName}
+                onChange={(e: any) =>
+                  setRegisterForm({ ...registerForm, lastName: e.target.value })
+                }
               />
               <TextField
                 margin="dense"
                 label="Email"
                 type="email"
                 fullWidth
-                value={regEmail}
-                onChange={(e: any) => setRegEmail(e.target.value)}
-              />
-              <TextField
-                margin="dense"
-                label="Téléphone"
-                type="tel"
-                fullWidth
-                value={regPhone}
-                onChange={(e: any) => setRegPhone(e.target.value)}
+                value={registerForm.email}
+                onChange={(e: any) =>
+                  setRegisterForm({ ...registerForm, email: e.target.value })
+                }
               />
               <TextField
                 margin="dense"
                 label="Mot de passe"
                 type="password"
                 fullWidth
-                value={regPassword}
-                onChange={(e: any) => setRegPassword(e.target.value)}
+                value={registerForm.password}
+                onChange={(e: any) =>
+                  setRegisterForm({ ...registerForm, password: e.target.value })
+                }
               />
               <TextField
                 margin="dense"
                 label="Confirmer le mot de passe"
                 type="password"
                 fullWidth
-                value={regConfirm}
-                onChange={(e: any) => setRegConfirm(e.target.value)}
+                value={registerForm.confirmPassword}
+                onChange={(e: any) =>
+                  setRegisterForm({
+                    ...registerForm,
+                    confirmPassword: e.target.value,
+                  })
+                }
               />
             </>
           ) : (
@@ -378,6 +423,7 @@ function Nav() {
                   setIsRegisterMode(true);
                   setIsAdminLogin(false);
                   setLoginError("");
+                  handleRegister();
                 }}
               >
                 Créer un compte

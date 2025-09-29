@@ -145,16 +145,19 @@ export default function Plan({}) {
     try {
       setIsLoading(true);
       const res = await axios.post(
-        `${APP_CONFIG.BACKEND_URL}/investment/plan`,
+        `${APP_CONFIG.BACKEND_URL}/investment/initiate`,
         {
           planId: selectedPlan?.id,
           amount: Number(customAmount),
-          deposit_phone_number: "07882238666",
+          deposit_phone_number: depositPhoneNumber,
           referralCode: referralCode,
         },
         setAuthHeaders(token)
       );
-      toastMessage("SUCCESS", res.data.message);
+      toastMessage(
+        "SUCCESS",
+        "Demande d'investissement initiée. Veuillez soumettre une preuve de paiement pour confirmation."
+      );
       setConfirmDialogOpen(true);
     } catch (error) {
       errorHandler(error);
@@ -408,8 +411,9 @@ export default function Plan({}) {
           </Button>
         </DialogActions>
         {isSubmitting && <LinearProgress />}
+        <FullPageLoader open={isLoading} />
       </Dialog>
-      <FullPageLoader open={isLoading} />
+      <FullPageLoader open={isLoading && !confirmDialogOpen} />
     </Container>
   );
 }

@@ -1,4 +1,6 @@
 import { toast } from "react-toastify";
+import { store } from "store";
+import { setShowLogin } from "store/actions/app";
 
 type ExtraHeaders = {
   [key: string]: string;
@@ -11,6 +13,7 @@ export const handleAuthError = (error: any) => {
     window.location =
       "/logout?redirect=" + window.location.pathname.replace("/", "");
     //@ts-ignore
+    store.dispatch(setShowLogin(true));
   }
 };
 
@@ -49,14 +52,6 @@ export const errorHandler = (error: any) => {
     toastMessage("ERROR", error.message);
   }
   handleAuthError(error);
-};
-
-export const setHeaders = (token: string) => {
-  return {
-    headers: {
-      token: token,
-    },
-  };
 };
 
 export const currencyFormatter = (num: any): string => {

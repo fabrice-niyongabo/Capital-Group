@@ -7,4 +7,5 @@ export interface IUser {
   lastName: string;
   email: string;
   role: Role;
+  referalCode: string;
 }

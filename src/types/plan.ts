@@ -5,4 +5,5 @@ export interface IPlan {
   maximum_amount: string;
   minimum_amount: string;
   name: string;
+  referalCode: string;
 }
