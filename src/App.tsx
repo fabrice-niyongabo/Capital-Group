@@ -6,6 +6,7 @@ import Home from "Home";
 import Plan from "views/plan";
 import Logout from "views/logout";
 import Earnings from "views/earnings";
+import ProtectedRoute from "compoents/ProtectedRoute";
 
 function App() {
   return (
@@ -16,7 +17,14 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/plan" element={<Plan />} />
-        <Route path="/earnings" element={<Earnings />} />
+        <Route
+          path="/earnings"
+          element={
+            <ProtectedRoute>
+              <Earnings />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       <Footer />
       <ToastContainer position="bottom-right" />

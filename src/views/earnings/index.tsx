@@ -31,7 +31,6 @@ import {
 import "./index.css";
 import { useSelector } from "react-redux";
 import { RootState } from "store/reducers";
-import { useNavigate } from "react-router-dom";
 import { APP_CONFIG } from "lib/constants";
 import InvestmentHistory from "./InvestmentHistory";
 import Summary from "./Summary";
@@ -41,24 +40,17 @@ import {
   setAuthHeaders,
   toastMessage,
 } from "lib/util";
-import { stat } from "fs";
 import FullPageLoader from "compoents/full-page-loader";
 import axios from "axios";
 import WithdrawHistory from "./WithdrawHistory";
 
 export default function Earnings() {
-  const navigate = useNavigate();
   const { statistics } = useSelector(
     (state: RootState) => state.statisticsReducer
   );
   const { token, userDetails } = useSelector(
     (state: RootState) => state.userReducer
   );
-
-  if (!token) {
-    navigate("/");
-    return null;
-  }
 
   const deposits: {
     date: string;
