@@ -477,30 +477,10 @@ export default function Earnings() {
           variant="contained"
           startIcon={<AccountBalanceWallet />}
           onClick={handleWithdraw}
-          disabled={summaryStats.totalDailyProfit === 0}
+          // disabled={summaryStats.totalDailyProfit === 0}
           className="action-button"
         >
           Retirer des Fonds
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<Download />}
-          onClick={handleExportData}
-          disabled={!deposits || deposits.length === 0}
-          className="action-button export-button"
-          sx={{
-            backgroundColor: "#2e7d32",
-            color: "white",
-            "&:hover": {
-              backgroundColor: "#1b5e20",
-            },
-            "&:disabled": {
-              backgroundColor: "#e0e0e0",
-              color: "#9e9e9e",
-            },
-          }}
-        >
-          Exporter les Données
         </Button>
       </Box>
 

@@ -6,6 +6,7 @@ import {
   Warning,
 } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -14,7 +15,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Input,
   Paper,
   Stack,
   Table,
@@ -71,11 +71,17 @@ function InvestmentHistory() {
 
   const handleSubmit = async () => {
     try {
-      setIsSubmitting(false);
+      if (!selectedItem || !proofImage) {
+        toastMessage(
+          "ERROR",
+          "Veuillez sélectionner un investissement et une preuve de paiement."
+        );
+        return;
+      }
       const formData = new FormData();
       formData.append("file", proofImage);
       setIsSubmitting(true);
-      const res = await axios.put(
+      await axios.put(
         APP_CONFIG.BACKEND_URL +
           "/investment/payment/proof/" +
           selectedItem?.id,
@@ -86,6 +92,9 @@ function InvestmentHistory() {
         "SUCCESS",
         `La preuve de paiement a été envoyée avec succès.`
       );
+      if (proofImageRef?.current) {
+        proofImageRef.current.value = "";
+      }
       setShowDialog(false);
       fetchInvestments();
     } catch (error) {
@@ -303,6 +312,13 @@ function InvestmentHistory() {
               disabled={isSubmitting}
               ref={proofImageRef}
             />
+
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                L'approbation du dépôt prend au maximum deux heures. Veuillez
+                patienter.
+              </Typography>
+            </Alert>
           </Box>
         </DialogContent>
         <DialogActions>
