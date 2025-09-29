@@ -1,0 +1,515 @@
+import { useState, useMemo } from "react";
+import {
+  Container,
+  Typography,
+  Paper,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
+  LinearProgress,
+  Divider,
+} from "@mui/material";
+import {
+  AttachMoney,
+  ShowChart,
+  AccountBalanceWallet,
+} from "@mui/icons-material";
+import "./index.css";
+import { useSelector } from "react-redux";
+import { RootState } from "store/reducers";
+import { useNavigate } from "react-router-dom";
+import { APP_CONFIG } from "lib/constants";
+import InvestmentHistory from "./InvestmentHistory";
+import Summary from "./Summary";
+import {
+  currencyFormatter,
+  errorHandler,
+  setAuthHeaders,
+  toastMessage,
+} from "lib/util";
+import { stat } from "fs";
+import FullPageLoader from "compoents/full-page-loader";
+import axios from "axios";
+import WithdrawHistory from "./WithdrawHistory";
+
+export default function Earnings() {
+  const navigate = useNavigate();
+  const { statistics } = useSelector(
+    (state: RootState) => state.statisticsReducer
+  );
+  const { token, userDetails } = useSelector(
+    (state: RootState) => state.userReducer
+  );
+
+  if (!token) {
+    navigate("/");
+    return null;
+  }
+
+  const deposits: {
+    date: string;
+    amount: number;
+    profit: number;
+    percent?: number;
+    plan?: string;
+  }[] = [];
+
+  const dailyProfitPercent = 5;
+
+  const inviteLink =
+    APP_CONFIG.PUBLIC_URL + "/?referalCode=" + userDetails?.referalCode;
+
+  const commissionBalance = 0;
+
+  const commissionHistory: {
+    id: number;
+    date: string;
+    amount: number;
+    commission: number;
+  }[] = [];
+
+  const onWithdrawCommission = (amount: number) => {
+    console.log(`Withdraw commission: $${amount}`);
+    return true; // or false depending on logic
+  };
+
+  const referralCount = 0;
+
+  const formatCurrency = useMemo(
+    () =>
+      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }),
+    []
+  );
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawalPhoneNumber, setWithdrawalPhoneNumber] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Calculate summary statistics
+  const summaryStats = useMemo(() => {
+    if (!deposits || deposits.length === 0) {
+      return {
+        totalInvested: 0,
+        totalDailyProfit: 0,
+        totalProfit: 0,
+        averageReturn: 0,
+        activeInvestments: 0,
+      };
+    }
+
+    const totalInvested = deposits.reduce((sum, dep) => sum + dep.amount, 0);
+    const totalDailyProfit = deposits.reduce((sum, dep) => sum + dep.profit, 0);
+    const totalProfit = totalDailyProfit * 30; // Assuming 30 days
+    const averageReturn =
+      deposits.length > 0
+        ? deposits.reduce(
+            (sum, dep) => sum + (dep.percent || dailyProfitPercent),
+            0
+          ) / deposits.length
+        : 0;
+    const activeInvestments = deposits.length;
+
+    return {
+      totalInvested,
+      totalDailyProfit,
+      totalProfit,
+      averageReturn,
+      activeInvestments,
+    };
+  }, [deposits, dailyProfitPercent]);
+
+  const handleWithdrawConfirm = async () => {
+    try {
+      if (!statistics) return;
+
+      if (
+        !withdrawAmount ||
+        parseFloat(withdrawAmount) > (statistics?.wallet_total_amount || 0)
+      ) {
+        toastMessage(
+          "ERROR",
+          "Vous ne pouvez pas retirer plus que ce que vous avez."
+        );
+        return;
+      }
+
+      if (withdrawalPhoneNumber.trim() === "") {
+        toastMessage("ERROR", "Veuillez entrer un numéro de téléphone.");
+        return;
+      }
+
+      setIsWithdrawing(true);
+      await axios.post(
+        `${APP_CONFIG.BACKEND_URL}/wallet/withdraw`,
+        {
+          amount: withdrawAmount,
+          withdrawal_phone_number: withdrawalPhoneNumber,
+        },
+        setAuthHeaders(token || "")
+      );
+      toastMessage("SUCCESS", "Demande de retrait initiée avec succès!");
+      setWithdrawDialogOpen(false);
+      setWithdrawAmount("");
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
+  const handleCopyInvite = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (e) {
+      console.error("Copy failed", e);
+    }
+  };
+
+  return (
+    <Container maxWidth="lg" className="earnings-container">
+      {/* Header Section */}
+      <Box className="earnings-title">
+        <Typography
+          variant="h4"
+          align="center"
+          gutterBottom
+          sx={{
+            color: "white",
+            backgroundColor: "#1976d2",
+            padding: "8px 16px",
+            borderRadius: "4px",
+            display: "inline-block",
+            margin: "0 auto",
+          }}
+        >
+          Tableau de Bord des Gains
+        </Typography>
+        <Typography
+          variant="subtitle1"
+          align="center"
+          sx={{
+            color: "white",
+            backgroundColor: "#1976d2",
+            padding: "6px 12px",
+            borderRadius: "4px",
+            display: "inline-block",
+            margin: "8px auto 0",
+            fontSize: "1rem",
+          }}
+        >
+          Suivez vos investissements et profits en temps réel
+        </Typography>
+      </Box>
+
+      {/* Referral Section */}
+      <Paper className="earnings-section" sx={{ mt: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          Programme de Parrainage
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 1,
+              alignItems: { xs: "stretch", sm: "center" },
+            }}
+          >
+            <TextField
+              disabled
+              label="Votre lien d'invitation"
+              value={inviteLink || ""}
+              fullWidth
+              InputProps={{ readOnly: true }}
+            />
+            <Button
+              variant="contained"
+              onClick={handleCopyInvite}
+              disabled={!inviteLink}
+            >
+              {copied ? "Copié!" : "Copier"}
+            </Button>
+          </Box>
+          <Divider />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Card className="summary-card">
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <AttachMoney color="success" />
+                    <Typography variant="h6">Commission disponible</Typography>
+                  </Box>
+                  <Typography
+                    variant="h4"
+                    color="success.main"
+                    sx={{ fontWeight: "bold" }}
+                  >
+                    {formatCurrency.format(commissionBalance || 0)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    5% des dépôts de vos filleuls
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Plus vous invitez, plus vos commissions augmentent en temps
+                    réel.
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    Filleuls: <strong>{referralCount}</strong>
+                  </Typography>
+                  <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => {
+                        const amount = commissionBalance || 0;
+                        if (!amount || amount <= 0) return;
+                        if (onWithdrawCommission) {
+                          const ok = onWithdrawCommission(amount);
+                          if (ok) alert("Commission retirée avec succès.");
+                        }
+                      }}
+                      disabled={!commissionBalance}
+                    >
+                      Retirer la commission
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={8}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Historique des Commissions
+              </Typography>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Date</TableCell>
+                      <TableCell align="right">Montant Dépôt</TableCell>
+                      <TableCell align="right">Commission (5%)</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {/* {commissionHistory && commissionHistory.length > 0 ? (
+                      commissionHistory.map((c) => (
+                        <TableRow key={c.id}>
+                          <TableCell>{c.date}</TableCell>
+                          <TableCell align="right">
+                            {formatCurrency.format(c.amount)}
+                          </TableCell>
+                          <TableCell align="right">
+                            {formatCurrency.format(c.commission)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : ( */}
+                    <TableRow>
+                      <TableCell colSpan={3} align="center">
+                        <Typography variant="body2" color="text.secondary">
+                          Aucune commission pour le moment.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                    {/* )} */}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
+
+      <Summary />
+
+      {/* Action Buttons */}
+      <Box sx={{ display: "flex", gap: 2, mb: 3, justifyContent: "center" }}>
+        <Button
+          variant="contained"
+          startIcon={<AccountBalanceWallet />}
+          onClick={() => setWithdrawDialogOpen(true)}
+          // disabled={statistics?.wallet_total_amount === 0}
+          className="action-button"
+        >
+          Retirer des Fonds
+        </Button>
+      </Box>
+
+      {/* Profit Projection */}
+      {summaryStats.totalInvested > 0 && (
+        <Paper className="projection-section">
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <ShowChart color="primary" />
+            Projections de Profit
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  bgcolor: "grey.50",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  color="success.main"
+                  sx={{ fontWeight: "bold" }}
+                >
+                  {formatCurrency.format(summaryStats.totalDailyProfit * 7)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Cette semaine
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  bgcolor: "grey.50",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  color="primary.main"
+                  sx={{ fontWeight: "bold" }}
+                >
+                  {formatCurrency.format(summaryStats.totalDailyProfit * 30)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ce mois
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  p: 2,
+                  bgcolor: "grey.50",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  color="warning.main"
+                  sx={{ fontWeight: "bold" }}
+                >
+                  {formatCurrency.format(summaryStats.totalDailyProfit * 365)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Cette année
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
+      )}
+
+      <InvestmentHistory />
+      <WithdrawHistory />
+
+      {/* Withdrawal Dialog */}
+      <Dialog
+        open={withdrawDialogOpen}
+        onClose={() => setWithdrawDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Retirer des Fonds</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" gutterBottom>
+            Montant disponible pour retrait:{" "}
+            <strong>
+              {currencyFormatter(statistics?.wallet_total_amount || 0)}$
+            </strong>
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Montant à retirer"
+            type="number"
+            fullWidth
+            value={withdrawAmount}
+            onChange={(e) => setWithdrawAmount(e.target.value)}
+            // inputProps={{ max: statistics?.wallet_total_amount || 0 }}
+            sx={{ mt: 2 }}
+          />
+          <Typography
+            variant="body1"
+            gutterBottom
+            sx={{ mt: 2, fontWeight: 600 }}
+          >
+            Entrez un numéro de téléphone où nous enverrons votre argent.
+            Example: 098..........
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Numéro de téléphone de retrait"
+            type="number"
+            fullWidth
+            value={withdrawalPhoneNumber}
+            onChange={(e) => setWithdrawalPhoneNumber(e.target.value)}
+          />
+          <Alert severity="info" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              Les retraits sont traités dans les 24 heures. Vous ne pouvez
+              retirer que vos profits quotidiens.
+            </Typography>
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setWithdrawDialogOpen(false)}>Annuler</Button>
+          <Button
+            onClick={handleWithdrawConfirm}
+            variant="contained"
+            // disabled={
+            //   !withdrawAmount ||
+            //   parseFloat(withdrawAmount) > summaryStats.totalDailyProfit
+            // }
+          >
+            Confirmer le Retrait
+          </Button>
+        </DialogActions>
+        <FullPageLoader open={isWithdrawing} />
+      </Dialog>
+    </Container>
+  );
+}
