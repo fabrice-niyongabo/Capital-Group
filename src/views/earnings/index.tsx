@@ -95,6 +95,7 @@ export default function Earnings() {
   );
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawalPhoneNumber, setWithdrawalPhoneNumber] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -146,11 +147,17 @@ export default function Earnings() {
         return;
       }
 
+      if (withdrawalPhoneNumber.trim() === "") {
+        toastMessage("ERROR", "Veuillez entrer un numéro de téléphone.");
+        return;
+      }
+
       setIsWithdrawing(true);
       await axios.post(
         `${APP_CONFIG.BACKEND_URL}/wallet/withdraw`,
         {
           amount: withdrawAmount,
+          withdrawal_phone_number: withdrawalPhoneNumber,
         },
         setAuthHeaders(token || "")
       );
@@ -461,6 +468,23 @@ export default function Earnings() {
             onChange={(e) => setWithdrawAmount(e.target.value)}
             // inputProps={{ max: statistics?.wallet_total_amount || 0 }}
             sx={{ mt: 2 }}
+          />
+          <Typography
+            variant="body1"
+            gutterBottom
+            sx={{ mt: 2, fontWeight: 600 }}
+          >
+            Entrez un numéro de téléphone où nous enverrons votre argent.
+            Example: 098..........
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Numéro de téléphone de retrait"
+            type="number"
+            fullWidth
+            value={withdrawalPhoneNumber}
+            onChange={(e) => setWithdrawalPhoneNumber(e.target.value)}
           />
           <Alert severity="info" sx={{ mt: 2 }}>
             <Typography variant="body2">
