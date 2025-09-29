@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -44,6 +44,7 @@ import { RootState } from "store/reducers";
 import { useNavigate } from "react-router-dom";
 import { APP_CONFIG } from "lib/constants";
 import InvestmentHistory from "./InvestmentHistory";
+import Summary from "./Summary";
 
 export default function Earnings() {
   const navigate = useNavigate();
@@ -145,29 +146,6 @@ export default function Earnings() {
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const handleExportData = () => {
-    const csvContent = [
-      ["Date", "Montant", "Plan", "Pourcentage", "Profit Quotidien"],
-      ...deposits.map((dep: any) => [
-        dep.date,
-        dep.amount.toFixed(2),
-        dep.plan || "-",
-        dep.percent ? `${dep.percent}%` : "-",
-        dep.profit.toFixed(2),
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "earnings-history.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
   };
 
   const handleCopyInvite = async () => {
@@ -346,130 +324,7 @@ export default function Earnings() {
         </Box>
       </Paper>
 
-      {/* Summary Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={4} md={2.4}>
-          <Card className="summary-card">
-            <CardContent>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
-              >
-                <AccountBalance color="primary" />
-                <Typography variant="h6">Investi Total</Typography>
-              </Box>
-              <Typography
-                variant="h4"
-                color="primary"
-                sx={{ fontWeight: "bold" }}
-              >
-                {formatCurrency.format(summaryStats.totalInvested)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {summaryStats.activeInvestments} investissement(s)
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={6} sm={4} md={2.4}>
-          <Card className="summary-card">
-            <CardContent>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
-              >
-                <AttachMoney color="success" />
-                <Typography variant="h6">Profit Quotidien</Typography>
-              </Box>
-              <Typography
-                variant="h4"
-                color="success.main"
-                sx={{ fontWeight: "bold" }}
-              >
-                {formatCurrency.format(summaryStats.totalDailyProfit)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Par jour
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={6} sm={4} md={2.4}>
-          <Card className="summary-card">
-            <CardContent>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
-              >
-                <TrendingUp color="warning" />
-                <Typography variant="h6">Profit Total</Typography>
-              </Box>
-              <Typography
-                variant="h4"
-                color="warning.main"
-                sx={{ fontWeight: "bold" }}
-              >
-                {formatCurrency.format(summaryStats.totalProfit)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                30 jours estimés
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={6} sm={4} md={2.4}>
-          <Card className="summary-card">
-            <CardContent>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
-              >
-                <ShowChart color="info" />
-                <Typography variant="h6">Rendement Moyen</Typography>
-              </Box>
-              <Typography
-                variant="h4"
-                color="info.main"
-                sx={{ fontWeight: "bold" }}
-              >
-                {summaryStats.averageReturn.toFixed(1)}%
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Par jour
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={6} sm={4} md={2.4}>
-          <Card className="summary-card">
-            <CardContent>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
-              >
-                <Timeline color="secondary" />
-                <Typography variant="h6">Performance</Typography>
-              </Box>
-              <Typography
-                variant="h4"
-                color="secondary.main"
-                sx={{ fontWeight: "bold" }}
-              >
-                {summaryStats.totalInvested > 0
-                  ? (
-                      (summaryStats.totalDailyProfit /
-                        summaryStats.totalInvested) *
-                      100
-                    ).toFixed(1)
-                  : 0}
-                %
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                ROI quotidien
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <Summary />
 
       {/* Action Buttons */}
       <Box sx={{ display: "flex", gap: 2, mb: 3, justifyContent: "center" }}>

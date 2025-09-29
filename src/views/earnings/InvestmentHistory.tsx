@@ -284,6 +284,10 @@ function InvestmentHistory() {
           <Box sx={{ mt: 2, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
             <ol type="1">
               <li>
+                Assurez-vous de payer en utilisant ce numéro de téléphone{" "}
+                <strong>{selectedItem?.deposit_phone_number}</strong>
+              </li>
+              <li>
                 Déposez {selectedItem?.amount}$ sur ce numéro de téléphone:
                 <strong>{selectedItem?.agent_phone.phone}</strong>
               </li>
