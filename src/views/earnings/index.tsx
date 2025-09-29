@@ -44,6 +44,7 @@ import {
 import { stat } from "fs";
 import FullPageLoader from "compoents/full-page-loader";
 import axios from "axios";
+import WithdrawHistory from "./WithdrawHistory";
 
 export default function Earnings() {
   const navigate = useNavigate();
@@ -442,6 +443,7 @@ export default function Earnings() {
       )}
 
       <InvestmentHistory />
+      <WithdrawHistory />
 
       {/* Withdrawal Dialog */}
       <Dialog
