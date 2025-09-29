@@ -1,6 +1,5 @@
 import {
   AccountBalance,
-  AttachMoney,
   ShowChart,
   Timeline,
   TrendingUp,
@@ -13,43 +12,20 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
-import axios from "axios";
-import { stat } from "fs";
-import { APP_CONFIG } from "lib/constants";
-import { currencyFormatter, errorHandler, setAuthHeaders } from "lib/util";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { currencyFormatter } from "lib/util";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchStatistics } from "store/actions/walletStatistics";
 import { RootState } from "store/reducers";
 
-interface IStatistics {
-  active_investments?: number;
-  total_amount_invested?: number;
-  total_amount_earned?: number;
-  wallet_total_amount?: number;
-  wallet_total_withdrawals?: number;
-}
 function Summary() {
-  const { token } = useSelector((state: RootState) => state.userReducer);
-  const [statistics, setStatistics] = useState<IStatistics | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchStatistics = async () => {
-    try {
-      setIsLoading(true);
-      const res = await axios.get(
-        `${APP_CONFIG.BACKEND_URL}/user/stats`,
-        setAuthHeaders(token || "")
-      );
-      setStatistics(res.data);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const dispatch = useDispatch();
+  const { isLoading, statistics } = useSelector(
+    (state: RootState) => state.statisticsReducer
+  );
 
   useEffect(() => {
-    fetchStatistics();
+    dispatch(fetchStatistics());
   }, []);
 
   return (
