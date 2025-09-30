@@ -1,4 +1,13 @@
-import { AccountCircle, Dashboard, ExitToApp } from "@mui/icons-material";
+import {
+  AccountCircle,
+  AlignVerticalCenter,
+  AlignVerticalTop,
+  BookmarkBorderOutlined,
+  BookmarkOutlined,
+  Dashboard,
+  ExitToApp,
+  Lock,
+} from "@mui/icons-material";
 import {
   Alert,
   AppBar,
@@ -11,6 +20,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   FormControlLabel,
   IconButton,
   Menu,
@@ -211,29 +221,31 @@ function Nav() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             CaPiTaL GrOuP
           </Typography>
-          <Tabs
-            value={location.pathname === "/" ? "/" : location.pathname}
-            onChange={(e, value) => navigate(value)}
-            textColor="inherit"
-            indicatorColor="secondary"
-            sx={{
-              mr: 1,
-              "& .MuiTab-root": {
-                fontFamily: 'Lato, "Space Mono", Poppins, sans-serif',
-                fontWeight: 600,
-                letterSpacing: 0.2,
-              },
-            }}
-          >
-            {tabs.map((tab) => (
-              <Tab
-                key={tab.path}
-                value={tab.path}
-                label={tab.label}
-                sx={{ mx: 0.5, minWidth: 0 }}
-              />
-            ))}
-          </Tabs>
+          {userDetails?.role == "user" && (
+            <Tabs
+              value={location.pathname === "/" ? "/" : location.pathname}
+              onChange={(e, value) => navigate(value)}
+              textColor="inherit"
+              indicatorColor="secondary"
+              sx={{
+                mr: 1,
+                "& .MuiTab-root": {
+                  fontFamily: 'Lato, "Space Mono", Poppins, sans-serif',
+                  fontWeight: 600,
+                  letterSpacing: 0.2,
+                },
+              }}
+            >
+              {tabs.map((tab) => (
+                <Tab
+                  key={tab.path}
+                  value={tab.path}
+                  label={tab.label}
+                  sx={{ mx: 0.5, minWidth: 0 }}
+                />
+              ))}
+            </Tabs>
+          )}
           <IconButton
             size="large"
             aria-label="compte utilisateur"
@@ -271,15 +283,23 @@ function Nav() {
               </MenuItem>
             ) : (
               <>
-                {role === "admin" ? (
-                  <MenuItem
-                    onClick={() => {
-                      navigate("/admin");
-                      handleClose();
-                    }}
-                  >
-                    Admin
-                  </MenuItem>
+                {userDetails?.role === "admin" ? (
+                  <>
+                    <MenuItem onClick={() => navigate("/security/password")}>
+                      <AlignVerticalCenter fontSize="small" /> Déconnexion
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem onClick={() => navigate("/security/password")}>
+                      <Lock fontSize="small" /> Change Password
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                      style={{ color: "red" }}
+                      onClick={() => navigate("/logout")}
+                    >
+                      <ExitToApp fontSize="small" /> Logout
+                    </MenuItem>
+                  </>
                 ) : (
                   <>
                     {/* <MenuItem>

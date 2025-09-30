@@ -7,6 +7,7 @@ import Plan from "views/plan";
 import Logout from "views/logout";
 import Earnings from "views/earnings";
 import ProtectedRoute from "compoents/ProtectedRoute";
+import ChangePassword from "views/change-password";
 
 function App() {
   return (
@@ -22,6 +23,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Earnings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/security/password"
+          element={
+            <ProtectedRoute>
+              <ChangePassword />
             </ProtectedRoute>
           }
         />
