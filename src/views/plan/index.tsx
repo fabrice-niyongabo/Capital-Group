@@ -49,13 +49,14 @@ import axios from "axios";
 import { IPlan } from "types/plan";
 import { APP_CONFIG } from "lib/constants";
 import FullPageLoader from "compoents/full-page-loader";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store/reducers";
 import { setShowLogin } from "store/actions/app";
 
 export default function Plan({}) {
   const params = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { token } = useSelector((state: RootState) => state.userReducer);
 
@@ -158,7 +159,8 @@ export default function Plan({}) {
         "SUCCESS",
         "Demande d'investissement initiée. Veuillez soumettre une preuve de paiement pour confirmation."
       );
-      setConfirmDialogOpen(true);
+      setConfirmDialogOpen(false);
+      navigate("/earnings");
     } catch (error) {
       errorHandler(error);
     } finally {
@@ -168,6 +170,9 @@ export default function Plan({}) {
 
   useEffect(() => {
     fetchPlans();
+    if (params.referalCode) {
+      setReferralCode(params.referalCode);
+    }
   }, []);
 
   return (

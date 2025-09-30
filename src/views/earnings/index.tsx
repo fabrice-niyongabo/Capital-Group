@@ -63,7 +63,7 @@ export default function Earnings() {
   const dailyProfitPercent = 5;
 
   const inviteLink =
-    APP_CONFIG.PUBLIC_URL + "/?referalCode=" + userDetails?.referalCode;
+    APP_CONFIG.PUBLIC_URL + "/plan?referalCode=" + userDetails?.referalCode;
 
   const commissionBalance = 0;
 
