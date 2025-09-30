@@ -49,13 +49,13 @@ import axios from "axios";
 import { IPlan } from "types/plan";
 import { APP_CONFIG } from "lib/constants";
 import FullPageLoader from "compoents/full-page-loader";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store/reducers";
 import { setShowLogin } from "store/actions/app";
 
 export default function Plan({}) {
-  const params = useParams();
+  const [searchParams, _] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { token } = useSelector((state: RootState) => state.userReducer);
@@ -170,8 +170,8 @@ export default function Plan({}) {
 
   useEffect(() => {
     fetchPlans();
-    if (params.referalCode) {
-      setReferralCode(params.referalCode);
+    if (searchParams.get("referalCode")) {
+      setReferralCode(searchParams.get("referalCode") || "");
     }
   }, []);
 
