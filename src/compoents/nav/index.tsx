@@ -282,9 +282,9 @@ function Nav() {
                   </MenuItem>
                 ) : (
                   <>
-                    <MenuItem>
+                    {/* <MenuItem>
                       <Dashboard /> Mon compte
-                    </MenuItem>
+                    </MenuItem> */}
                     <MenuItem
                       style={{ color: "red" }}
                       onClick={() => navigate("/logout")}
