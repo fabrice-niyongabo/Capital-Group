@@ -10,6 +10,8 @@ import ProtectedRoute from "compoents/ProtectedRoute";
 import ChangePassword from "views/change-password";
 import AdminProtectedRoute from "compoents/AdminProtectedRoute";
 import Investments from "views/investments";
+import PhoneNumbers from "views/phone-numbers";
+import PhoneNumberTxns from "views/phone-numbers-txns";
 
 function App() {
   return (
@@ -41,6 +43,22 @@ function App() {
           element={
             <AdminProtectedRoute>
               <Investments />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/phoneNumbers"
+          element={
+            <AdminProtectedRoute>
+              <PhoneNumbers />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/phoneNumbers/txns/:id"
+          element={
+            <AdminProtectedRoute>
+              <PhoneNumberTxns />
             </AdminProtectedRoute>
           }
         />
