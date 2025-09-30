@@ -8,6 +8,8 @@ import Logout from "views/logout";
 import Earnings from "views/earnings";
 import ProtectedRoute from "compoents/ProtectedRoute";
 import ChangePassword from "views/change-password";
+import AdminProtectedRoute from "compoents/AdminProtectedRoute";
+import Investments from "views/investments";
 
 function App() {
   return (
@@ -32,6 +34,14 @@ function App() {
             <ProtectedRoute>
               <ChangePassword />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/investments"
+          element={
+            <AdminProtectedRoute>
+              <Investments />
+            </AdminProtectedRoute>
           }
         />
       </Routes>

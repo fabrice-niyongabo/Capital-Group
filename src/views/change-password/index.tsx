@@ -69,7 +69,7 @@ function ChangePassword() {
             fontWeight: 600,
           }}
         >
-          Comparaison des Plans
+          Change Password
         </Typography>
 
         <form style={{ marginTop: 20 }} onSubmit={handleSubmit}>

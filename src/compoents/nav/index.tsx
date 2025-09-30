@@ -285,8 +285,8 @@ function Nav() {
               <>
                 {userDetails?.role === "admin" ? (
                   <>
-                    <MenuItem onClick={() => navigate("/security/password")}>
-                      <AlignVerticalCenter fontSize="small" /> Déconnexion
+                    <MenuItem onClick={() => navigate("/investments")}>
+                      <AlignVerticalCenter fontSize="small" /> Investissements
                     </MenuItem>
                     <Divider />
                     <MenuItem onClick={() => navigate("/security/password")}>
