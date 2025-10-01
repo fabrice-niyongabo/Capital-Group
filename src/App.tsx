@@ -12,6 +12,7 @@ import AdminProtectedRoute from "compoents/AdminProtectedRoute";
 import Investments from "views/investments";
 import PhoneNumbers from "views/phone-numbers";
 import PhoneNumberTxns from "views/phone-numbers-txns";
+import CreatePhoneNumber from "views/create-phone-number";
 
 function App() {
   return (
@@ -59,6 +60,15 @@ function App() {
           element={
             <AdminProtectedRoute>
               <PhoneNumberTxns />
+            </AdminProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/phoneNumbers/create"
+          element={
+            <AdminProtectedRoute>
+              <CreatePhoneNumber />
             </AdminProtectedRoute>
           }
         />

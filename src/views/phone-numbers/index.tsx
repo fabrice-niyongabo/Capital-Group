@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Container,
   Paper,
@@ -13,7 +14,12 @@ import {
 import axios from "axios";
 import FullPageLoader from "compoents/full-page-loader";
 import { APP_CONFIG } from "lib/constants";
-import { currencyFormatter, errorHandler, setAuthHeaders } from "lib/util";
+import {
+  currencyFormatter,
+  errorHandler,
+  setAuthHeaders,
+  toastMessage,
+} from "lib/util";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -50,6 +56,22 @@ function PhoneNumbers() {
     }
   };
 
+  const handleDeactivate = async (id: number) => {
+    try {
+      setIsLoading(true);
+      const res = await axios.delete(
+        `${APP_CONFIG.BACKEND_URL}/agent/phone/${id}`,
+        setAuthHeaders(token || "")
+      );
+      toastMessage("SUCCESS", res.data.message);
+      fetchPhoneNumbers();
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchPhoneNumbers();
   }, []);
@@ -57,18 +79,23 @@ function PhoneNumbers() {
   return (
     <Container maxWidth="md" className="home-container">
       <Paper className="plan-comparison-section">
-        <Typography
-          variant="h6"
-          gutterBottom
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            fontWeight: 600,
-          }}
-        >
-          Agent Phone Numbers
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              fontWeight: 600,
+            }}
+          >
+            Agent Phone Numbers
+          </Typography>
+          <Button onClick={() => navigate("/phoneNumbers/create")}>
+            Create New
+          </Button>
+        </Box>
 
         <TableContainer>
           <Table>
@@ -101,7 +128,12 @@ function PhoneNumbers() {
                       View Txns
                     </Button>
                     {!phone.isdeleted && (
-                      <Button variant="outlined" size="small" color="secondary">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="secondary"
+                        onClick={() => handleDeactivate(phone.id)}
+                      >
                         Deactivate
                       </Button>
                     )}
@@ -111,8 +143,8 @@ function PhoneNumbers() {
             </TableBody>
           </Table>
         </TableContainer>
-        <FullPageLoader open={isLoading} />
       </Paper>
+      <FullPageLoader open={isLoading} />
     </Container>
   );
 }
