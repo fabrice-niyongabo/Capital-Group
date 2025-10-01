@@ -29,7 +29,7 @@ import {
   AccountBalanceWallet,
 } from "@mui/icons-material";
 import "./index.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store/reducers";
 import { APP_CONFIG } from "lib/constants";
 import InvestmentHistory from "./InvestmentHistory";
@@ -43,6 +43,7 @@ import {
 import FullPageLoader from "compoents/full-page-loader";
 import axios from "axios";
 import WithdrawHistory from "./WithdrawHistory";
+import Commisions from "./Commisions";
 
 export default function Earnings() {
   const { statistics } = useSelector(
@@ -52,78 +53,10 @@ export default function Earnings() {
     (state: RootState) => state.userReducer
   );
 
-  const deposits: {
-    date: string;
-    amount: number;
-    profit: number;
-    percent?: number;
-    plan?: string;
-  }[] = [];
-
-  const dailyProfitPercent = 5;
-
-  const inviteLink =
-    APP_CONFIG.PUBLIC_URL + "/plan?referalCode=" + userDetails?.referalCode;
-
-  const commissionBalance = 0;
-
-  const commissionHistory: {
-    id: number;
-    date: string;
-    amount: number;
-    commission: number;
-  }[] = [];
-
-  const onWithdrawCommission = (amount: number) => {
-    console.log(`Withdraw commission: $${amount}`);
-    return true; // or false depending on logic
-  };
-
-  const referralCount = 0;
-
-  const formatCurrency = useMemo(
-    () =>
-      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }),
-    []
-  );
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawalPhoneNumber, setWithdrawalPhoneNumber] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  // Calculate summary statistics
-  const summaryStats = useMemo(() => {
-    if (!deposits || deposits.length === 0) {
-      return {
-        totalInvested: 0,
-        totalDailyProfit: 0,
-        totalProfit: 0,
-        averageReturn: 0,
-        activeInvestments: 0,
-      };
-    }
-
-    const totalInvested = deposits.reduce((sum, dep) => sum + dep.amount, 0);
-    const totalDailyProfit = deposits.reduce((sum, dep) => sum + dep.profit, 0);
-    const totalProfit = totalDailyProfit * 30; // Assuming 30 days
-    const averageReturn =
-      deposits.length > 0
-        ? deposits.reduce(
-            (sum, dep) => sum + (dep.percent || dailyProfitPercent),
-            0
-          ) / deposits.length
-        : 0;
-    const activeInvestments = deposits.length;
-
-    return {
-      totalInvested,
-      totalDailyProfit,
-      totalProfit,
-      averageReturn,
-      activeInvestments,
-    };
-  }, [deposits, dailyProfitPercent]);
 
   const handleWithdrawConfirm = async () => {
     try {
@@ -165,17 +98,6 @@ export default function Earnings() {
     }
   };
 
-  const handleCopyInvite = async () => {
-    if (!inviteLink) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (e) {
-      console.error("Copy failed", e);
-    }
-  };
-
   return (
     <Container maxWidth="lg" className="earnings-container">
       {/* Header Section */}
@@ -212,134 +134,7 @@ export default function Earnings() {
         </Typography>
       </Box>
 
-      {/* Referral Section */}
-      <Paper className="earnings-section" sx={{ mt: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          Programme de Parrainage
-        </Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              gap: 1,
-              alignItems: { xs: "stretch", sm: "center" },
-            }}
-          >
-            <TextField
-              disabled
-              label="Votre lien d'invitation"
-              value={inviteLink || ""}
-              fullWidth
-              InputProps={{ readOnly: true }}
-            />
-            <Button
-              variant="contained"
-              onClick={handleCopyInvite}
-              disabled={!inviteLink}
-            >
-              {copied ? "Copié!" : "Copier"}
-            </Button>
-          </Box>
-          <Divider />
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Card className="summary-card">
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 1,
-                    }}
-                  >
-                    <AttachMoney color="success" />
-                    <Typography variant="h6">Commission disponible</Typography>
-                  </Box>
-                  <Typography
-                    variant="h4"
-                    color="success.main"
-                    sx={{ fontWeight: "bold" }}
-                  >
-                    {formatCurrency.format(commissionBalance || 0)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    5% des dépôts de vos filleuls
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Plus vous invitez, plus vos commissions augmentent en temps
-                    réel.
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 0.5 }}
-                  >
-                    Filleuls: <strong>{referralCount}</strong>
-                  </Typography>
-                  <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        const amount = commissionBalance || 0;
-                        if (!amount || amount <= 0) return;
-                        if (onWithdrawCommission) {
-                          const ok = onWithdrawCommission(amount);
-                          if (ok) alert("Commission retirée avec succès.");
-                        }
-                      }}
-                      disabled={!commissionBalance}
-                    >
-                      Retirer la commission
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={8}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Historique des Commissions
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Date</TableCell>
-                      <TableCell align="right">Montant Dépôt</TableCell>
-                      <TableCell align="right">Commission (5%)</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {/* {commissionHistory && commissionHistory.length > 0 ? (
-                      commissionHistory.map((c) => (
-                        <TableRow key={c.id}>
-                          <TableCell>{c.date}</TableCell>
-                          <TableCell align="right">
-                            {formatCurrency.format(c.amount)}
-                          </TableCell>
-                          <TableCell align="right">
-                            {formatCurrency.format(c.commission)}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : ( */}
-                    <TableRow>
-                      <TableCell colSpan={3} align="center">
-                        <Typography variant="body2" color="text.secondary">
-                          Aucune commission pour le moment.
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                    {/* )} */}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Grid>
-          </Grid>
-        </Box>
-      </Paper>
+      <Commisions />
 
       <Summary />
 
@@ -355,85 +150,6 @@ export default function Earnings() {
           Retirer des Fonds
         </Button>
       </Box>
-
-      {/* Profit Projection */}
-      {summaryStats.totalInvested > 0 && (
-        <Paper className="projection-section">
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            <ShowChart color="primary" />
-            Projections de Profit
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 2,
-                  bgcolor: "grey.50",
-                  borderRadius: 2,
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  color="success.main"
-                  sx={{ fontWeight: "bold" }}
-                >
-                  {formatCurrency.format(summaryStats.totalDailyProfit * 7)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Cette semaine
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 2,
-                  bgcolor: "grey.50",
-                  borderRadius: 2,
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  color="primary.main"
-                  sx={{ fontWeight: "bold" }}
-                >
-                  {formatCurrency.format(summaryStats.totalDailyProfit * 30)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Ce mois
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  p: 2,
-                  bgcolor: "grey.50",
-                  borderRadius: 2,
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  color="warning.main"
-                  sx={{ fontWeight: "bold" }}
-                >
-                  {formatCurrency.format(summaryStats.totalDailyProfit * 365)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Cette année
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-      )}
 
       <InvestmentHistory />
       <WithdrawHistory />

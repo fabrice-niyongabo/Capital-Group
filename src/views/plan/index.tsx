@@ -5,9 +5,6 @@ import {
   Typography,
   Paper,
   Box,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   Button,
   TextField,
   Table,
@@ -30,14 +27,7 @@ import {
   Tooltip,
   LinearProgress,
 } from "@mui/material";
-import {
-  TrendingUp,
-  Security,
-  Schedule,
-  Info,
-  CheckCircle,
-  Warning,
-} from "@mui/icons-material";
+import { TrendingUp, Security, Info, CheckCircle } from "@mui/icons-material";
 
 import {
   currencyFormatter,
@@ -49,13 +39,12 @@ import axios from "axios";
 import { IPlan } from "types/plan";
 import { APP_CONFIG } from "lib/constants";
 import FullPageLoader from "compoents/full-page-loader";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "store/reducers";
 import { setShowLogin } from "store/actions/app";
 
 export default function Plan({}) {
-  const [searchParams, _] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { token } = useSelector((state: RootState) => state.userReducer);
@@ -67,7 +56,6 @@ export default function Plan({}) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [plans, setPlans] = useState<IPlan[]>([]);
-  const [referralCode, setReferralCode] = useState("");
   const [depositPhoneNumber, setDepositPhoneNumber] = useState("");
 
   const [selectedPlan, setSelectedPlan] = useState<IPlan | null>(null);
@@ -151,7 +139,6 @@ export default function Plan({}) {
           planId: selectedPlan?.id,
           amount: Number(customAmount),
           deposit_phone_number: depositPhoneNumber,
-          referralCode: referralCode,
         },
         setAuthHeaders(token)
       );
@@ -170,9 +157,6 @@ export default function Plan({}) {
 
   useEffect(() => {
     fetchPlans();
-    if (searchParams.get("referalCode")) {
-      setReferralCode(searchParams.get("referalCode") || "");
-    }
   }, []);
 
   return (
@@ -219,7 +203,10 @@ export default function Plan({}) {
                     />
                   </Box>
                 </TableCell>
-                <TableCell align="center">{plans[0]?.minimum_amount}</TableCell>
+                <TableCell align="center">
+                  {currencyFormatter(plans[0]?.minimum_amount)}$ -
+                  {currencyFormatter(plans[0]?.maximum_amount || 0)}$
+                </TableCell>
                 <TableCell align="center">
                   <Typography
                     variant="body2"
@@ -319,15 +306,6 @@ export default function Plan({}) {
                 sx={{ mb: 2 }}
               />
             </div>
-
-            <TextField
-              type="text"
-              label="Referral Code (Optionnel)"
-              value={referralCode}
-              onChange={(e) => setReferralCode(e.target.value)}
-              fullWidth
-              sx={{ mb: 2 }}
-            />
 
             <Button
               variant="contained"

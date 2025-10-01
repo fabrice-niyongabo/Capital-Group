@@ -14,6 +14,8 @@ import PhoneNumbers from "views/phone-numbers";
 import PhoneNumberTxns from "views/phone-numbers-txns";
 import CreatePhoneNumber from "views/create-phone-number";
 import WithDrawals from "views/withdrawals";
+import UnProtectedRoute from "compoents/UnProtectedRoute";
+import AdminLogin from "views/admin-login";
 
 function App() {
   return (
@@ -22,8 +24,17 @@ function App() {
       <Nav />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/invite" element={<Home />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/plan" element={<Plan />} />
+        <Route
+          path="/admin"
+          element={
+            <UnProtectedRoute>
+              <AdminLogin />
+            </UnProtectedRoute>
+          }
+        />
         <Route
           path="/earnings"
           element={

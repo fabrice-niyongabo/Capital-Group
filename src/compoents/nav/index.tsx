@@ -1,27 +1,19 @@
 import {
   AccountCircle,
   AlignVerticalCenter,
-  AlignVerticalTop,
-  BookmarkBorderOutlined,
-  BookmarkOutlined,
-  Dashboard,
   ExitToApp,
   Lock,
 } from "@mui/icons-material";
 import {
   Alert,
   AppBar,
-  Avatar,
-  Badge,
   Box,
   Button,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
-  FormControlLabel,
   IconButton,
   Menu,
   MenuItem,
@@ -37,33 +29,31 @@ import { APP_CONFIG } from "lib/constants";
 import { errorHandler, toastMessage } from "lib/util";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { setShowLogin } from "store/actions/app";
 import { setToken, setUser } from "store/actions/user";
 import { RootState } from "store/reducers";
 
 function Nav() {
   const dispatch = useDispatch();
+  const [searchParams, _] = useSearchParams();
   const { showLogin } = useSelector((state: RootState) => state.appReducer);
   const { token, userDetails } = useSelector(
     (state: RootState) => state.userReducer
   );
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [role, setRole] = useState("user");
   const [anchorEl, setAnchorEl] = useState(null);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
 
   const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [pendingReferrerId, setPendingReferrerId] = useState(null);
   const [registerForm, setRegisterForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
+    referralCode: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -143,6 +133,7 @@ function Nav() {
         lastName: registerForm.lastName,
         email: registerForm.email,
         password: registerForm.password,
+        refered_by_code: registerForm.referralCode,
       });
       toastMessage(
         "SUCCESS",
@@ -154,6 +145,7 @@ function Nav() {
         email: "",
         password: "",
         confirmPassword: "",
+        referralCode: "",
       });
       setLoginForm({
         email: "",
@@ -198,6 +190,8 @@ function Nav() {
       if (pathValue && pathValue.trim().length > 1) {
         navigate(`/${pathValue}`);
         return;
+      } else {
+        navigate("/plan");
       }
     } catch (error) {
       toastMessage("ERROR", "Mot de passe ou email invalide");
@@ -214,14 +208,46 @@ function Nav() {
     }
   }, [showLogin]);
 
+  useEffect(() => {
+    if (searchParams.get("referalCode") && !token) {
+      setRegisterForm({
+        ...registerForm,
+        referralCode: searchParams.get("referalCode") || "",
+      });
+      handleLoginOpen();
+      setIsRegisterMode(true);
+    }
+  }, []);
+
   return (
     <>
       <AppBar position="static" sx={{ width: "100%" }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              display: {
+                xs: "none",
+                md: "block",
+              },
+            }}
+          >
             CaPiTaL GrOuP
           </Typography>
-          {userDetails?.role == "user" && (
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              display: {
+                xs: "block",
+                md: "none",
+              },
+            }}
+          >
+            CPG
+          </Typography>
+          {userDetails?.role != "admin" && (
             <Tabs
               value={location.pathname === "/" ? "/" : location.pathname}
               onChange={(e, value) => navigate(value)}
@@ -392,6 +418,19 @@ function Nav() {
                   })
                 }
               />
+              <TextField
+                type="text"
+                label="Referral Code (Optionnel)"
+                value={registerForm.referralCode}
+                onChange={(e) =>
+                  setRegisterForm({
+                    ...registerForm,
+                    referralCode: e.target.value,
+                  })
+                }
+                fullWidth
+                sx={{ mb: 2 }}
+              />
             </>
           ) : (
             <>
@@ -415,16 +454,6 @@ function Nav() {
                 onChange={(e: any) =>
                   setLoginForm({ ...loginForm, password: e.target.value })
                 }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={isAdminLogin}
-                    onChange={(e: any) => setIsAdminLogin(e.target.checked)}
-                  />
-                }
-                label="Se connecter en tant qu'admin"
-                sx={{ mt: 1 }}
               />
             </>
           )}
