@@ -1,27 +1,19 @@
 import {
   AccountCircle,
   AlignVerticalCenter,
-  AlignVerticalTop,
-  BookmarkBorderOutlined,
-  BookmarkOutlined,
-  Dashboard,
   ExitToApp,
   Lock,
 } from "@mui/icons-material";
 import {
   Alert,
   AppBar,
-  Avatar,
-  Badge,
   Box,
   Button,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
-  FormControlLabel,
   IconButton,
   Menu,
   MenuItem,
@@ -231,8 +223,29 @@ function Nav() {
     <>
       <AppBar position="static" sx={{ width: "100%" }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              display: {
+                xs: "none",
+                md: "block",
+              },
+            }}
+          >
             CaPiTaL GrOuP
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              display: {
+                xs: "block",
+                md: "none",
+              },
+            }}
+          >
+            CPG
           </Typography>
           {userDetails?.role != "admin" && (
             <Tabs
