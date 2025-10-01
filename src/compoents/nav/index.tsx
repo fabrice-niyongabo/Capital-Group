@@ -198,6 +198,8 @@ function Nav() {
       if (pathValue && pathValue.trim().length > 1) {
         navigate(`/${pathValue}`);
         return;
+      } else {
+        navigate("/plan");
       }
     } catch (error) {
       toastMessage("ERROR", "Mot de passe ou email invalide");
@@ -439,16 +441,6 @@ function Nav() {
                 onChange={(e: any) =>
                   setLoginForm({ ...loginForm, password: e.target.value })
                 }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={isAdminLogin}
-                    onChange={(e: any) => setIsAdminLogin(e.target.checked)}
-                  />
-                }
-                label="Se connecter en tant qu'admin"
-                sx={{ mt: 1 }}
               />
             </>
           )}
