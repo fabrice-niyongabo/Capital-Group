@@ -22,6 +22,7 @@ function App() {
       <Nav />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/invite" element={<Home />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/plan" element={<Plan />} />
         <Route
