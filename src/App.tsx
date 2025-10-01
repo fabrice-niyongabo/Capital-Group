@@ -13,6 +13,7 @@ import Investments from "views/investments";
 import PhoneNumbers from "views/phone-numbers";
 import PhoneNumberTxns from "views/phone-numbers-txns";
 import CreatePhoneNumber from "views/create-phone-number";
+import WithDrawals from "views/withdrawals";
 
 function App() {
   return (
@@ -69,6 +70,14 @@ function App() {
           element={
             <AdminProtectedRoute>
               <CreatePhoneNumber />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/withdrawals"
+          element={
+            <AdminProtectedRoute>
+              <WithDrawals />
             </AdminProtectedRoute>
           }
         />

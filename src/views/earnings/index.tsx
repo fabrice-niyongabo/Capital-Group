@@ -157,6 +157,7 @@ export default function Earnings() {
       toastMessage("SUCCESS", "Demande de retrait initiée avec succès!");
       setWithdrawDialogOpen(false);
       setWithdrawAmount("");
+      window.location.reload();
     } catch (error) {
       errorHandler(error);
     } finally {

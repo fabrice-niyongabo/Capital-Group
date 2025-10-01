@@ -285,6 +285,10 @@ function Nav() {
               <>
                 {userDetails?.role === "admin" ? (
                   <>
+                    <MenuItem onClick={() => navigate("/withdrawals")}>
+                      <AlignVerticalCenter fontSize="small" /> Pending
+                      WithDrawals
+                    </MenuItem>
                     <MenuItem onClick={() => navigate("/phoneNumbers")}>
                       <AlignVerticalCenter fontSize="small" /> Agent Phone
                       Numbers
