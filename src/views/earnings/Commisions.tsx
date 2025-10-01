@@ -20,7 +20,7 @@ import {
 import axios from "axios";
 import MaskedEmail from "compoents/MaskedEmail";
 import { APP_CONFIG } from "lib/constants";
-import { currencyFormatter, errorHandler } from "lib/util";
+import { currencyFormatter, errorHandler, setAuthHeaders } from "lib/util";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "store/reducers";
@@ -39,7 +39,9 @@ interface ICommission {
 }
 
 function Commisions() {
-  const { userDetails } = useSelector((state: RootState) => state.userReducer);
+  const { userDetails, token } = useSelector(
+    (state: RootState) => state.userReducer
+  );
 
   const [commissions, setCommissions] = useState<ICommission[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +65,8 @@ function Commisions() {
     try {
       setIsLoading(true);
       const res = await axios.get(
-        `${APP_CONFIG.BACKEND_URL}/wallet/commisions`
+        `${APP_CONFIG.BACKEND_URL}/wallet/commisions`,
+        setAuthHeaders(token || "")
       );
       setCommissions(res.data);
     } catch (error) {
@@ -130,6 +133,7 @@ function Commisions() {
                     commissions.reduce((sum, c) => sum + Number(c.amount), 0) ||
                       0
                   )}
+                  $
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   5% des dépôts de vos filleuls
@@ -172,8 +176,11 @@ function Commisions() {
                         <TableCell>
                           <MaskedEmail email={c.commision_user_email} />
                         </TableCell>
-                        <TableCell align="right">
-                          {currencyFormatter(c.amount)}
+                        <TableCell
+                          align="right"
+                          sx={{ fontWeight: "bold", color: "green" }}
+                        >
+                          +{currencyFormatter(c.amount)}$
                         </TableCell>
                       </TableRow>
                     ))

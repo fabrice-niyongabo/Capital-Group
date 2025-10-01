@@ -203,7 +203,10 @@ export default function Plan({}) {
                     />
                   </Box>
                 </TableCell>
-                <TableCell align="center">{plans[0]?.minimum_amount}</TableCell>
+                <TableCell align="center">
+                  {currencyFormatter(plans[0]?.minimum_amount)}$ -
+                  {currencyFormatter(plans[0]?.maximum_amount || 0)}$
+                </TableCell>
                 <TableCell align="center">
                   <Typography
                     variant="body2"
