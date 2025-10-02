@@ -2,6 +2,10 @@ import {
   Box,
   Button,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Table,
   TableBody,
@@ -40,6 +44,8 @@ function PhoneNumbers() {
   const { token } = useSelector((state: RootState) => state.userReducer);
   const [phoneNumbers, setPhoneNumbers] = useState<IAgentPhone[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<IAgentPhone | null>(null);
 
   const fetchPhoneNumbers = async () => {
     try {
@@ -56,11 +62,12 @@ function PhoneNumbers() {
     }
   };
 
-  const handleDeactivate = async (id: number) => {
+  const handleDeactivate = async () => {
     try {
       setIsLoading(true);
+      setShowDialog(false);
       const res = await axios.delete(
-        `${APP_CONFIG.BACKEND_URL}/agent/phone/${id}`,
+        `${APP_CONFIG.BACKEND_URL}/agent/phone/${selectedItem?.id}`,
         setAuthHeaders(token || "")
       );
       toastMessage("SUCCESS", res.data.message);
@@ -110,41 +117,67 @@ function PhoneNumbers() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {phoneNumbers.map((phone, i) => (
-                <TableRow key={i}>
-                  <TableCell>{i + 1}</TableCell>
-                  <TableCell>{phone.name}</TableCell>
-                  <TableCell>{phone.phone}</TableCell>
-                  <TableCell>{currencyFormatter(phone.balance)}$</TableCell>
-                  <TableCell>
-                    {phone.isdeleted ? "Inactive" : "Active"}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => navigate(`/phoneNumbers/txns/${phone.id}`)}
-                    >
-                      View Txns
-                    </Button>
-                    {!phone.isdeleted && (
+              {phoneNumbers
+                .filter((item) => !item.isdeleted)
+                .map((phone, i) => (
+                  <TableRow key={i}>
+                    <TableCell>{i + 1}</TableCell>
+                    <TableCell>{phone.name}</TableCell>
+                    <TableCell>{phone.phone}</TableCell>
+                    <TableCell>{currencyFormatter(phone.balance)}$</TableCell>
+                    <TableCell>
+                      {phone.isdeleted ? "Inactive" : "Active"}
+                    </TableCell>
+                    <TableCell>
                       <Button
                         variant="outlined"
                         size="small"
-                        color="secondary"
-                        onClick={() => handleDeactivate(phone.id)}
+                        onClick={() =>
+                          navigate(`/phoneNumbers/txns/${phone.id}`)
+                        }
                       >
-                        Deactivate
+                        View Txns
                       </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                      {!phone.isdeleted && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          color="error"
+                          onClick={() => {
+                            setSelectedItem(phone);
+                            setShowDialog(true);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
       </Paper>
       <FullPageLoader open={isLoading} />
+      <Dialog
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" gutterBottom>
+            Do you want to delete the agent phone number{" "}
+            <strong>{selectedItem?.name}</strong> -
+            <strong>{selectedItem?.phone}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDialog(false)}>Close</Button>
+          <Button onClick={() => handleDeactivate()}>Delete</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

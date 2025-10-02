@@ -280,11 +280,13 @@ function WithDrawals() {
               label="Phone"
               onChange={(e) => setAgentPhoneNumber(e.target.value)}
             >
-              {phoneNumbers.map((phone, i) => (
-                <MenuItem key={i} value={phone.phone}>
-                  {phone.phone} | {phone.name}
-                </MenuItem>
-              ))}
+              {phoneNumbers
+                .filter((phone) => !phone.isdeleted)
+                .map((phone, i) => (
+                  <MenuItem key={i} value={phone.phone}>
+                    {phone.phone} | {phone.name}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
         </DialogContent>
