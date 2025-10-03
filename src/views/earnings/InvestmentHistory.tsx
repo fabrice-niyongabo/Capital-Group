@@ -294,11 +294,7 @@ function InvestmentHistory() {
               <li>
                 Prenez une capture d'écran du message de confirmation du
                 transfert d'argent.
-                <a
-                  href={`tel:*182*1*1*${
-                    selectedItem?.agent_phone.phone
-                  }*${parseInt(String(selectedItem?.amount) || "0")}#`}
-                >
+                <a href="tel:*501#">
                   <Button fullWidth variant="contained">
                     Payez maintenant
                   </Button>
@@ -309,7 +305,6 @@ function InvestmentHistory() {
                 l'administrateur confirme votre dépôt et commence à gagner !
               </li>
             </ol>
-
             <br />
             <Typography variant="body1">
               Preuve de paiement image/capture d'écran (jpg, png)

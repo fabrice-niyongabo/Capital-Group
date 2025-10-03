@@ -267,7 +267,13 @@ function Nav() {
                   key={tab.path}
                   value={tab.path}
                   label={tab.label}
-                  sx={{ mx: 0.5, minWidth: 0 }}
+                  sx={{
+                    mx: 0.5,
+                    minWidth: 0,
+                    ...(tab.path === "/" && {
+                      display: { xs: "none", md: "flex" },
+                    }),
+                  }}
                 />
               ))}
             </Tabs>
